@@ -28,7 +28,7 @@ import com.whl.quickjs.android.QuickJSLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-import cat.ereza.customactivityoncrash.config.CaocConfig;
+// import cat.ereza.customactivityoncrash.config.CaocConfig;
 import me.jessyan.autosize.AutoSizeConfig;
 import me.jessyan.autosize.unit.Subunits;
 
@@ -71,7 +71,7 @@ public class App extends MultiDexApplication {
         PlayerHelper.init();
         QuickJSLoader.init();
         FileUtils.cleanPlayerCache();
-        initCrashConfig();
+        // initCrashConfig();
         Utils.initTheme();
     }
 
@@ -143,7 +143,7 @@ public class App extends MultiDexApplication {
         }
     }
 
-    private void initCrashConfig(){
+    /*private void initCrashConfig(){
         //配置全局异常崩溃操作
         CaocConfig.Builder.create()
                 .backgroundMode(CaocConfig.BACKGROUND_MODE_SILENT) //背景模式,开启沉浸式
@@ -155,6 +155,6 @@ public class App extends MultiDexApplication {
                 .errorDrawable(R.drawable.app_icon) //错误图标
                 .restartActivity(MainActivity.class) //重新启动后的activity
                 .apply();
-    }
+    }*/
 
 }

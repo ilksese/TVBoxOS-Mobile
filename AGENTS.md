@@ -1,256 +1,187 @@
-# AGENTS.md - TVBoxOS-Mobile Development Guidelines
-Implement basic authentication with Supabase. use library /supabase/supabase for API and docs.
+# AGENTS.md - TVBoxOS-Mobile Development Guide
+
+## Quick Reference
+
+**Language**: Mixed Java/Kotlin Android app  
+**Package**: `com.github.tvbox.osc`  
+**Gradle**: 8.7 | AGP: 8.4.0 | Kotlin: 1.9.22  
+**SDK**: Min 24, Target 30, Compile 33 | Java 21
+
 ## Build Commands
 
 ```bash
-# Debug build
+# Build APKs (automated script with keystore handling)
+./build.sh         # Mac/Linux
+build.bat          # Windows
+
+# Standard builds
 ./gradlew assembleDebug
-
-# Release build
 ./gradlew assembleRelease
+./gradlew clean build
 
-# Clean build
-./gradlew clean
-
-# Build all modules
-./gradlew build
-
-# Lint check
-./gradlew lint
-
-# Run lint with specific variant
-./gradlew lintDebug
-
-# Build specific module
+# Module-specific
 ./gradlew :app:assembleDebug
-
-# Install to connected device/emulator
 ./gradlew installDebug
 
-# View dependencies
-./gradlew dependencies
-
-# Debug build with logging
-./gradlew assembleDebug --stacktrace
-
-# Find help
+# Diagnostics
 ./gradlew tasks
+./gradlew dependencies
+./gradlew assembleDebug --stacktrace
 ```
 
-## Build Scripts
+**Output**: `app/build/outputs/apk/{debug|release}/MBox_v*.apk`
 
-Use the cross-platform build scripts for a complete build workflow (copy keystore → build → cleanup).
-
-### Quick Start
-
-**Windows:**
-```cmd
-build.bat
-```
-
-**Mac/Linux:**
-```bash
-chmod +x build.sh
-./build.sh
-```
-
-### Build Outputs
-
-| Variant | Location |
-|---------|----------|
-| Debug | `app/build/outputs/apk/debug/MBox_v*.apk` |
-| Release | `app/build/outputs/apk/release/MBox_v*.apk` |
-
-### How It Works
-
-1. Copies `TVBoxOSC.jks` from `../MBox-Build/DIY/` to `app/`
-2. Builds Debug APK
-3. Builds Release APK
-4. Deletes the keystore file (security)
-
-### Requirements
-
-- Parent directory contains `MBox-Build` repository with signing key
-- JDK 21+, Android SDK, Gradle 8.7+
-
-## Test Commands
+## Lint & Test Commands
 
 ```bash
-# Run unit tests
+# Lint
+./gradlew lint
+./gradlew lintDebug
+./gradlew lintFix
+
+# Unit tests (all variants)
 ./gradlew test
+./gradlew testDebugUnitTest
 
-# Run specific test class
-./gradlew test --tests "com.github.tvbox.osc.util.TestClassName"
+# Single test class
+./gradlew test --tests "com.github.tvbox.osc.util.ClassName"
 
-# Run tests with specific method
-./gradlew test --tests "com.github.tvbox.osc.util.TestClassName.testMethod"
+# Single test method
+./gradlew test --tests "com.github.tvbox.osc.util.ClassName.methodName"
 
-# Run Android instrumented tests
+# Instrumented tests (requires device/emulator)
 ./gradlew connectedAndroidTest
-
-# Run specific instrumented test
+./gradlew connectedDebugAndroidTest
 ./gradlew connectedAndroidTest --tests "com.github.tvbox.osc.TestClassName"
 ```
 
 ## Project Structure
 
 ```
-TVBoxOS-Mobile/
-├── app/                    # Main application module
-│   ├── src/main/java/com/github/tvbox/osc/
-│   │   ├── api/           # API configuration
-│   │   ├── base/          # Base classes (BaseActivity, BaseVbActivity, BaseVbFragment)
-│   │   ├── bean/          # Data classes/beans
-│   │   ├── cache/         # Room database management
-│   │   ├── constant/      # Constants
-│   │   ├── receiver/      # Broadcast receivers
-│   │   ├── server/        # Local server
-│   │   ├── ui/
-│   │   │   ├── activity/  # Activities
-│   │   │   ├── adapter/   # RecyclerView adapters
-│   │   │   ├── dialog/    # Dialogs
-│   │   │   ├── fragment/  # Fragments
-│   │   │   └── widget/    # Custom views
-│   │   └── util/          # Utility classes
-│   └── src/main/res/      # Resources (layout, values, drawable, etc.)
-├── player/                 # Video player module
-├── quickjs/               # JavaScript engine module
-├── TabLayout/             # Custom TabLayout module
-├── ViewPager1Delegate/   # ViewPager delegate module
-├── crash/                # Crash handling module
-├── build.gradle           # Root build configuration
-└── settings.gradle        # Project settings
+app/src/main/java/com/github/tvbox/osc/
+├── api/           API configuration & sources
+├── base/          BaseActivity, BaseVbActivity, BaseVbFragment
+├── bean/          Data models (Java POJOs, Kotlin data classes)
+├── cache/         Room database entities & DAOs
+├── ui/
+│   ├── activity/  Activities (mixed Java/Kotlin)
+│   ├── fragment/  Fragments
+│   ├── adapter/   RecyclerView adapters
+│   ├── dialog/    Dialog implementations
+│   └── widget/    Custom views
+└── util/          Utility classes
+
+Modules: player/, quickjs/, TabLayout/, ViewPager1Delegate/, crash/
 ```
 
-## Code Style Guidelines
+## Code Style
 
-### Kotlin Conventions
+### Naming Conventions
 
-1. **Naming Conventions**
-   - Classes: PascalCase (`MainActivity`, `HomeFragment`, `DoubanSuggestBean`)
-   - Functions/variables: camelCase (`initData()`, `mBinding`, `tabIndex`)
-   - Constants: UPPER_SNAKE_CASE in companion object
-   - Package: lowercase (`com.github.tvbox.osc.ui.activity`)
+- **Classes**: PascalCase (`MainActivity`, `DoubanSuggestBean`)
+- **Functions/Variables**: camelCase (`initData()`, `mBinding`, `tabIndex`)
+- **Constants**: UPPER_SNAKE_CASE in companion object
+- **Packages**: lowercase (`com.github.tvbox.osc.ui.activity`)
 
-2. **ViewBinding Usage**
-   - Use `BaseVbActivity<T : ViewBinding>` for activities with ViewBinding
-   - Use `BaseVbFragment<T : ViewBinding>` for fragments with ViewBinding
-   - Access binding via `mBinding` property (lateinit)
-   - Example: `mBinding.vp.adapter`, `mBinding.bottomNav`
+### Kotlin Patterns
 
-3. **Activity/Fragment Patterns**
-   - Activities extend `BaseVbActivity<ActivityBinding>`
-   - Fragments extend `BaseVbFragment<FragmentBinding>`
-   - Override `init()` for initialization logic
-   - Use `jumpActivity()` helper for navigation
-   - Use `setLoadSir()` for loading states
+**ViewBinding Activities/Fragments:**
+```kotlin
+class MainActivity : BaseVbActivity<ActivityMainBinding>() {
+    override fun init() {
+        mBinding.vp.adapter = // access binding via mBinding
+    }
+}
+```
 
-4. **Imports Organization**
-   - Android framework imports first
-   - Third-party library imports next
-   - Project imports last
-   - Group by package, alphabetically sorted within groups
+**Data Classes:**
+```kotlin
+data class DoubanSuggestBean(
+    var id: String,
+    var title: String,
+) {
+    var doubanRating: String? = null
+        get() = field ?: ""  // custom getter with default
+}
+```
 
-5. **Data Classes (Beans)**
-   - Use `data class` for domain models
-   - Primary constructor properties first
-   - Nullable properties with default null values
-   - Custom getters for computed properties when needed
+**Null Safety:**
+- Use `?` for nullable types
+- Use `?.` for safe calls, `?.let {}` for null scopes
+- Use `?:` for defaults, `lateinit` for guaranteed-init properties
 
-6. **Null Safety**
-   - Use nullable types (`?`) for potentially null values
-   - Use `?.` for safe calls
-   - Use `?.let {}` for null checks with scope
-   - Use `?:` for default values
-   - Use `lateinit` for ViewBinding (guaranteed initialized before use)
+**Coroutines:**
+```kotlin
+lifecycleScope.launch {
+    withContext(Dispatchers.IO) { /* blocking work */ }
+    withContext(Dispatchers.Main) { /* UI updates */ }
+}
+```
 
-7. **Error Handling**
-   - Use try-catch for operations that may throw
-   - Use callback interfaces for async operations
-   - Show user feedback with ToastUtils/XPopup
-   - Log errors with `e.printStackTrace()` for debugging
+### Java Patterns
 
-8. **Coroutines**
-   - Use `lifecycleScope.launch` for coroutine lifecycle management
-   - Use `withContext(Dispatchers.IO)` for blocking IO operations
-   - Use `Dispatchers.Main` for UI operations
+**Activities:** Extend `BaseActivity`, override `getLayoutResID()` or use ViewBinding via subclass  
+**Data Beans:** Use POJOs with XStream annotations for XML/JSON parsing  
+**Async:** Callback interfaces, EventBus for cross-component communication
+
+### Import Organization
+
+1. Android framework (`android.*`, `androidx.*`)
+2. Third-party libraries (`com.google.*`, `com.squareup.*`)
+3. Project imports (`com.github.tvbox.osc.*`)
+
+Group by package, alphabetically sorted.
 
 ### XML Resources
 
-1. **Layout Files**
-   - Use ViewBinding-compatible IDs (snake_case)
-   - Prefix activity layouts with `activity_`
-   - Prefix fragment layouts with `fragment_`
-   - Prefix dialog layouts with `dialog_`
-   - Prefix item layouts with `item_`
+**Layouts:**
+- IDs: snake_case for ViewBinding
+- Prefixes: `activity_*`, `fragment_*`, `dialog_*`, `item_*`
 
-2. **Values Resources**
-   - `colors.xml`: Primary, accent, background colors
-   - `strings.xml`: All user-facing strings
-   - `styles.xml`: Theme and widget styles
-   - `dimens.xml`: Dimension values for consistent spacing
-   - `attrs.xml`: Custom view attributes
+**Drawables:**
+- Prefixes: `shape_*`, `selector_*`, `bg_*`
+- Prefer vector drawables
 
-3. **Drawables**
-   - Use vector drawables where possible
-   - Prefix shape drawables with `shape_`
-   - Prefix selector drawables with `selector_`
-   - Prefix background drawables with `bg_`
+**Values:**
+- Extract strings to `strings.xml` (Chinese & English)
+- Dimensions to `dimens.xml`
+- Colors to `colors.xml`
 
-### Module Dependencies
+### Error Handling
 
-- `player/`: Video playback functionality
-- `quickjs/`: JavaScript engine
-- `TabLayout/`: Custom tab layout (angcyo library)
-- `ViewPager1Delegate/`: ViewPager delegation
-- `crash/`: Crash reporting
+- `try-catch` for exceptions
+- Callback interfaces for async results
+- `ToastUtils.showShort()` / `XPopup` for user feedback
+- `e.printStackTrace()` for debugging (avoid in production)
 
-### Key Libraries
+## Key Libraries
 
-- **Networking**: OkHttp 3.12.11
-- **Image Loading**: Glide 4.12.0, Picasso 2.71828
-- **Database**: Room 2.3.0
-- **JSON**: Gson 2.8.7, XStream 1.4.15
-- **UI**: Material 1.4.0, Lottie 5.2.0
-- **Utils**: UtilCodeX 1.31.0, Hawk 2.0.1
-- **Permissions**: XXPermissions 13.6
-- **HTML Parsing**: JSoup 1.14.1
-- **Event Bus**: EventBus 3.2.0
+| Category | Library | Version |
+|----------|---------|---------|
+| Network | OkHttp | 3.12.11 |
+| Image | Glide, Picasso | 4.12.0, 2.71828 |
+| Database | Room | 2.3.0 |
+| JSON | Gson, XStream | 2.8.7, 1.4.15 |
+| UI | Material, Lottie | 1.4.0, 5.2.0 |
+| Utils | UtilCodeX, Hawk | 1.31.0, 2.0.1 |
+| Permissions | XXPermissions | 13.6 |
+| HTML | JSoup | 1.14.1 |
+| Events | EventBus | 3.2.0 |
 
-### Gradle Configuration
+## Common Tasks
 
-- **Gradle Version**: 8.7
-- **Android Gradle Plugin (AGP)**: 8.4.0
-- **Kotlin Version**: 1.9.22
-- **Compile SDK**: 33
-- **Min SDK**: 24
-- **Target SDK**: 30
-- **Java Version**: 21 (for build, targets Java 21 bytecode)
+**New Activity:** Extend `BaseVbActivity<ActivityXxxBinding>`, override `init()`  
+**New Fragment:** Extend `BaseVbFragment<FragmentXxxBinding>`, override `init()`  
+**New Dialog:** Use `XPopup.Builder()` or extend dialog classes  
+**Navigation:** Use `jumpActivity()` helper  
+**Loading States:** Use `setLoadSir()` with LoadSir callbacks
 
-### Development Notes
+## Notes
 
-- Signing config uses `TVBoxOSC.jks` with credentials in build.gradle
-- APK output format: `MBox_v{version}_{buildType}_{date}.apk`
-- MultiDex enabled for large app size
-- Room schema exported to `app/schemas/`
-- Uses Chinese comments and UI strings
-
-### Common Tasks
-
-1. **Add new Activity**: Extend `BaseVbActivity<ActivityBinding>`, implement `init()`
-2. **Add new Fragment**: Extend `BaseVbFragment<FragmentBinding>`, implement `init()`
-3. **Add new Dialog**: Create dialog class, use XPopup.Builder for complex dialogs
-4. **Add new Data Class**: Use `data class` with constructor properties
-5. **Add new API Source**: Configure in ApiConfig, use LoadConfigCallback pattern
-
-### Code Review Checklist
-
-- [ ] ViewBinding initialized before use
-- [ ] Null safety handled properly
-- [ ] Resources extracted to strings.xml
-- [ ] Hardcoded dimensions moved to dimens.xml
-- [ ] Coroutines use proper dispatchers
-- [ ] Async operations handle errors gracefully
-- [ ] Chinese translations provided for new strings
-- [ ] No sensitive data in logs
-- [ ] Lifecycle awareness (use lifecycleScope, ViewModelProvider)
+- **MultiDex** enabled (large app)
+- **Room schemas** exported to `app/schemas/`
+- **Signing**: Uses `TVBoxOSC.jks` (copied by build scripts)
+- **APK naming**: `MBox_v{version}_{buildType}_{date}.apk`
+- **Comments**: Chinese & English mixed
+- **EventBus**: Activities auto-register in `BaseActivity.onCreate()`
+- **ImmersionBar**: Status bar theming in base classes

@@ -3,11 +3,17 @@ plugins {
 }
 
 android {
+    namespace 'com.github.quickjs'
     compileSdk 33
 
     defaultConfig {
         minSdk 18
         targetSdk 28
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 }
 

@@ -47,14 +47,14 @@ android {
         config {
             keyAlias 'TVBoxOSC'
             keyPassword 'TVBoxOSC'
-            storeFile file('app/TVBoxOSC.jks')
+            storeFile file('TVBoxOSC.jks')
             storePassword 'TVBoxOSC'
         }
     }
 
     buildTypes {
         debug {
-            // signingConfig signingConfigs.config
+            signingConfig signingConfigs.config
         }
 
         release {

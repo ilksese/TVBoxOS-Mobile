@@ -37,6 +37,42 @@ Implement basic authentication with Supabase. use library /supabase/supabase for
 ./gradlew tasks
 ```
 
+## Build Scripts
+
+Use the cross-platform build scripts for a complete build workflow (copy keystore → build → cleanup).
+
+### Quick Start
+
+**Windows:**
+```cmd
+build.bat
+```
+
+**Mac/Linux:**
+```bash
+chmod +x build.sh
+./build.sh
+```
+
+### Build Outputs
+
+| Variant | Location |
+|---------|----------|
+| Debug | `app/build/outputs/apk/debug/MBox_v*.apk` |
+| Release | `app/build/outputs/apk/release/MBox_v*.apk` |
+
+### How It Works
+
+1. Copies `TVBoxOSC.jks` from `../MBox-Build/DIY/` to `app/`
+2. Builds Debug APK
+3. Builds Release APK
+4. Deletes the keystore file (security)
+
+### Requirements
+
+- Parent directory contains `MBox-Build` repository with signing key
+- JDK 21+, Android SDK, Gradle 8.7+
+
 ## Test Commands
 
 ```bash

@@ -94,14 +94,8 @@ public class App extends MultiDexApplication {
         String[] apis = getResources().getStringArray(R.array.api);
         if(!Hawk.contains(HawkConfig.API_URL) && !Hawk.contains(HawkConfig.SUBSCRIPTIONS) && !TextUtils.isEmpty(apis[0])){
             List<Subscription> subscriptions = new ArrayList<>();
-            for (int i = 0; i < apis.length; i++) {
-                if (i==0){
-                    subscriptions.add(new Subscription("订阅: 1", apis[0]).setChecked(true));
-                    Hawk.put(HawkConfig.API_URL,apis[0]);
-                }else {
-                    subscriptions.add(new Subscription("订阅: "+(i+1), apis[i]));
-                }
-            }
+            subscriptions.add(new Subscription("默认订阅", apis[0]).setChecked(true));
+            Hawk.put(HawkConfig.API_URL,apis[0]);
             Hawk.put(HawkConfig.SUBSCRIPTIONS,subscriptions);
         }
     }

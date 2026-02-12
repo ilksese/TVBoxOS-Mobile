@@ -42,6 +42,15 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
 
     override fun init() {
 
+        if (mSubscriptions.isEmpty()) {
+            val defaultUrl = "http://xhztv.top/xhz"
+            val defaultSubscription = Subscription("默认订阅", defaultUrl).setChecked(true)
+            mSubscriptions.add(defaultSubscription)
+            mSelectedUrl = defaultUrl
+            Hawk.put(HawkConfig.API_URL, defaultUrl)
+            Hawk.put(HawkConfig.SUBSCRIPTIONS, mSubscriptions)
+        }
+
         mBinding.rv.setAdapter(mSubscriptionAdapter)
         mSubscriptions.forEach(Consumer { item: Subscription ->
             if (item.isChecked) {

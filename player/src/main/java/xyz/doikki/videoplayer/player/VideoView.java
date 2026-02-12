@@ -21,7 +21,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.github.tvbox.osc.player.R;
+import tv.danmaku.ijk.player.R;
 
 import java.io.IOException;
 import java.util.ArrayList;
